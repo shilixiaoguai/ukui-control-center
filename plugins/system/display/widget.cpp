@@ -1157,7 +1157,7 @@ void Widget::setScreenKDS(QString kdsConfig)
 
         KScreen::OutputList screensPre = mPrevConfig->connectedOutputs();
 
-        KScreen::OutputPtr mainScreen = mPrevConfig->output(getPrimaryScreenID());
+        KScreen::OutputPtr mainScreen = mPrevConfig->primaryOutput();
         if (!mainScreen.isNull()) {
             mainScreen->setPos(QPoint(0, 0));
         }
