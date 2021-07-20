@@ -808,18 +808,6 @@ int Widget::getLaptopBrightness() const
     return mPowerGSettings->get(POWER_KEY).toInt();
 }
 
-int Widget::getPrimaryScreenID()
-{
-    QString primaryScreen = getPrimaryWaylandScreen();
-    int screenId;
-    for (const KScreen::OutputPtr &output : mConfig->outputs()) {
-        if (!output->name().compare(primaryScreen, Qt::CaseInsensitive)) {
-            screenId = output->id();
-        }
-    }
-    return screenId;
-}
-
 void Widget::showNightWidget(bool judge)
 {
     if (judge) {
@@ -1125,45 +1113,6 @@ void Widget::slotIdentifyOutputs(KScreen::ConfigOperation *op)
     mOutputTimer->start(2500);
 }
 
-void Widget::callMethod(QRect geometry, QString name)
-{
-    double scale = 1.0;
-    int x, y, w, h;
-    QDBusInterface waylandIfc("org.ukui.SettingsDaemon",
-                              "/org/ukui/SettingsDaemon/wayland",
-                              "org.ukui.SettingsDaemon.wayland",
-                              QDBusConnection::sessionBus());
-
-    QDBusReply<double> reply = waylandIfc.call("scale");
-    if (reply.isValid()) {
-        scale = reply.value();
-    }
-
-    QDBusMessage message = QDBusMessage::createMethodCall("org.ukui.SettingsDaemon",
-                                                          "/org/ukui/SettingsDaemon/wayland",
-                                                          "org.ukui.SettingsDaemon.wayland",
-                                                          "priScreenChanged");
-    x = ceil(geometry.x() / scale);
-    y = ceil(geometry.y() / scale);
-    w = ceil(geometry.width() / scale);
-    h = ceil(geometry.height() / scale);
-    message << x << y << w << h << name;
-    QDBusConnection::sessionBus().send(message);
-}
-
-QString Widget::getPrimaryWaylandScreen()
-{
-    QDBusInterface screenIfc("org.ukui.SettingsDaemon",
-                             "/org/ukui/SettingsDaemon/wayland",
-                             "org.ukui.SettingsDaemon.wayland",
-                             QDBusConnection::sessionBus());
-    QDBusReply<QString> screenReply = screenIfc.call("priScreenName");
-    if (screenReply.isValid()) {
-        return screenReply.value();
-    }
-    return QString();
-}
-
 void Widget::isWayland()
 {
     QString sessionType = getenv("XDG_SESSION_TYPE");
@@ -1436,6 +1385,7 @@ void Widget::save()
         }
     }
 
+    qDebug() << "应用配置：" << config;
     /* Store the current config, apply settings */
     auto *op = new KScreen::SetConfigOperation(config);
 
@@ -1595,8 +1545,7 @@ bool Widget::writeFile(const QString &filePath)
         }
 
         writeGlobalPart(output, info, oldOutput);
-        info[QStringLiteral("primary")] = !output->name().compare(
-            getPrimaryWaylandScreen(), Qt::CaseInsensitive);
+        info[QStringLiteral("primary")] = output->isPrimary();
         info[QStringLiteral("enabled")] = output->isEnabled();
 
         auto setOutputConfigInfo = [&info](const KScreen::OutputPtr &out) {
@@ -1664,18 +1613,10 @@ void Widget::mainScreenButtonSelect(int index)
     const KScreen::OutputPtr newPrimary = mConfig->output(ui->primaryCombo->itemData(index).toInt());
     int connectCount = mConfig->connectedOutputs().count();
 
-    if (mIsWayland) {
-        if (!getPrimaryWaylandScreen().compare(newPrimary->name(), Qt::CaseInsensitive)) {
-            ui->mainScreenButton->setEnabled(false);
-        } else {
-            ui->mainScreenButton->setEnabled(true);
-        }
+    if (newPrimary == mConfig->primaryOutput()) {
+        ui->mainScreenButton->setEnabled(false);
     } else {
-        if (newPrimary == mConfig->primaryOutput()) {
-            ui->mainScreenButton->setEnabled(false);
-        } else {
-            ui->mainScreenButton->setEnabled(true);
-        }
+        ui->mainScreenButton->setEnabled(true);
     }
 
     // 设置是否勾选

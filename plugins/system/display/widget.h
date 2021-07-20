@@ -125,8 +125,6 @@ private Q_SLOTS:
     void initNightStatus();                     // 初始化夜间模式
     void nightChangedSlot(QHash<QString, QVariant> nightArg);
 
-    void callMethod(QRect geometry, QString name);// 设置wayland主屏幕
-    QString getPrimaryWaylandScreen();
     void isWayland();
 
     void kdsScreenchangeSlot(QString status);
