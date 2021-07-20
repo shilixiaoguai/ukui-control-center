@@ -211,9 +211,6 @@ void Widget::setConfig(const KScreen::ConfigPtr &config, bool showBrightnessFram
     }
     mFirstLoad = false;
 
-    if (mIsWayland) {
-        mScreenId = getPrimaryScreenID();
-    }
     if (showBrightnessFrameFlag == true) {
         showBrightnessFrame();   //初始化的时候，显示
     }
@@ -1439,19 +1436,6 @@ void Widget::save()
         }
     }
 
-    if (mIsWayland && -1 != mScreenId) {
-        if (enableScreenCount >= 2 && !config.isNull() && !config->output(mScreenId).isNull()) {
-            config->output(mScreenId)->setPrimary(true);
-            callMethod(config->primaryOutput()->geometry(), config->primaryOutput()->name());
-            if (mScreen->primaryOutput()) {
-                mScreen->primaryOutput()->setIsCloneMode(mUnifyButton->isChecked());
-            }
-        } else if (!enableOutput.isNull()) {
-            enableOutput->setPrimary(true);
-            callMethod(enableOutput->geometry(), enableOutput->name());
-        }
-    }
-
     /* Store the current config, apply settings */
     auto *op = new KScreen::SetConfigOperation(config);
 
@@ -1473,10 +1457,6 @@ void Widget::save()
     });
 
     if (isRestoreConfig()) {
-        if (mIsWayland && -1 != mScreenId && !mPreScreenConfig->output(mScreenId).isNull()) {
-            mPreScreenConfig->output(mScreenId)->setPrimary(true);
-            callMethod(mPreScreenConfig->output(mScreenId)->geometry(), mPreScreenConfig->output(mScreenId)->name());
-        }
         auto *op = new KScreen::SetConfigOperation(mPreScreenConfig);
         op->exec();
 
@@ -1722,8 +1702,6 @@ void Widget::primaryButtonEnable(bool status)
     ui->mainScreenButton->setEnabled(false);
     const KScreen::OutputPtr newPrimary = mConfig->output(ui->primaryCombo->itemData(index).toInt());
     mConfig->setPrimaryOutput(newPrimary);
-
-    mScreenId = newPrimary->id();
 }
 
 void Widget::checkOutputScreen(bool judge)

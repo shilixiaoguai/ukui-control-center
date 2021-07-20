@@ -219,8 +219,6 @@ private:
 
     QHash<QString, QVariant> mNightConfig;
 
-    int mScreenId = -1;
-
     double scaleres;
 
     bool mIsNightMode     = false;
