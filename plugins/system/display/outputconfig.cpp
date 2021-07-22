@@ -78,6 +78,10 @@ void OutputConfig::initUi()
         }
     });
 
+    connect(mOutput.data(), &KScreen::Output::isEnabledChanged, this, [=](){
+       slotEnableWidget();
+    });
+
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
     QVBoxLayout *vbox = new QVBoxLayout(this);
@@ -208,6 +212,8 @@ void OutputConfig::initUi()
     scaleFrame->setMinimumSize(550, 50);
     scaleFrame->setMaximumSize(960, 50);
     vbox->addWidget(scaleFrame);
+
+    slotEnableWidget();
 }
 
 double OutputConfig::getScreenScale()
@@ -350,6 +356,19 @@ void OutputConfig::slotDPIChanged(QString key)
         mScaleCombox->blockSignals(true);
         mScaleCombox->setCurrentText(scaleToString(scale));
         mScaleCombox->blockSignals(false);
+    }
+}
+
+void OutputConfig::slotEnableWidget()
+{
+    if (mOutput.data()->isEnabled()) {
+        mResolution->setEnabled(true);
+        mRotation->setEnabled(true);
+        mRefreshRate->setEnabled(true);
+    } else {
+        mResolution->setEnabled(false);
+        mRotation->setEnabled(false);
+        mRefreshRate->setEnabled(false);
     }
 }
 
