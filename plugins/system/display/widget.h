@@ -128,6 +128,7 @@ private Q_SLOTS:
     void isWayland();
 
     void kdsScreenchangeSlot(QString status);
+    void delayApply();
 
 public Q_SLOTS:
     void save();
@@ -167,6 +168,8 @@ private:
 
     QList<ScreenConfig> getPreScreenCfg();
     void setPreScreenCfg(KScreen::OutputList screens);
+
+    void setScreenIsApply(bool isApply);
 
 private:
     Ui::DisplayWindow *ui;
@@ -229,6 +232,7 @@ private:
     bool mIsWayland       = false;
     bool mIsBattery       = false;
     bool mIsOutputAdd     = false;
+    bool mIsScreenAdd     = false;
 
     bool threadRunExit = false;
     QFuture<void> threadRun;
@@ -238,6 +242,7 @@ private:
     QVector<QString> deleteFrameNameV;  //用二级指针判断null出现问题，只想到这种方式排除段错误
     BrightnessFrame *currentBrightnessFrame;
     bool exitFlag = false;
+
 
 };
 

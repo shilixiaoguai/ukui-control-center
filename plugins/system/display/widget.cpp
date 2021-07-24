@@ -234,6 +234,11 @@ void Widget::loadQml()
 
     QQuickItem *rootObject = ui->quickWidget->rootObject();
     mScreen = rootObject->findChild<QMLScreen *>(QStringLiteral("outputView"));
+
+    connect(mScreen, &QMLScreen::released, this, [=] {
+       delayApply();
+    });
+
     if (!mScreen) {
         return;
     }
@@ -319,7 +324,7 @@ void Widget::slotQmloutOutChanged()
 {
     QMLOutput *output = mScreen->primaryOutput();
     if (output != nullptr && !output->outputPtr().isNull()) {
-        mScreen->setScreenPos(output);
+        mScreen->setScreenPosCenter(output, false);
     }
 
 }
@@ -663,7 +668,7 @@ bool Widget::isRestoreConfig()
     case QMessageBox::RejectRole:
         QStringList keys = scaleGSettings->keys();
         if (keys.contains("scalingFactor")) {
-            scaleGSettings->set(SCALE_KEY,scaleres);
+//            scaleGSettings->set(SCALE_KEY,scaleres);
         }
         res = true;
         break;
@@ -913,12 +918,6 @@ void Widget::outputAdded(const KScreen::OutputPtr &output)
             this, &Widget::slotOutputConnectedChanged);
     connect(output.data(), &KScreen::Output::isEnabledChanged,
             this, &Widget::slotOutputEnabledChanged);
-    connect(output.data(), &KScreen::Output::currentModeIdChanged,
-            this, [this]() {
-        QTimer::singleShot(200, this, [=]{
-           slotQmloutOutChanged();
-        });
-    });
 
     addOutputToPrimaryCombo(output);
 
@@ -1299,6 +1298,11 @@ void Widget::setPreScreenCfg(KScreen::OutputList screens)
     file.write(QJsonDocument::fromVariant(outputList).toJson());
 }
 
+void Widget::setScreenIsApply(bool isApply)
+{
+    mIsScreenAdd = !isApply;
+}
+
 //通过win+p修改，不存在按钮影响亮度显示的情况，直接就应用了，此时每个屏幕的openFlag是没有修改的，需要单独处理(setScreenKDS)
 void Widget::kdsScreenchangeSlot(QString status)
 {
@@ -1308,7 +1312,6 @@ void Widget::kdsScreenchangeSlot(QString status)
     if (mConfig->connectedOutputs().count() >= 2) {
         mUnifyButton->setChecked(isCheck);
     }
-    mKDSCfg.clear();
 
     QTimer::singleShot(1500, this, [=]{
         Q_FOREACH(KScreen::OutputPtr output, mConfig->connectedOutputs()) {
@@ -1325,6 +1328,18 @@ void Widget::kdsScreenchangeSlot(QString status)
         } else {
             showBrightnessFrame(2);
         }
+    });
+}
+
+void Widget::delayApply()
+{
+    QTimer::singleShot(500, this, [=] {
+        if (mKDSCfg.isEmpty() && !mIsScreenAdd) {
+            slotQmloutOutChanged();
+            save();
+        }
+        mKDSCfg.clear();
+        mIsScreenAdd = false;
     });
 }
 
@@ -1366,7 +1381,7 @@ void Widget::save()
         return;
     }
 
-    writeScale(mScreenScale);
+//    writeScale(mScreenScale);
     setNightMode(mNightButton->isChecked());
 
     if (!KScreen::Config::canBeApplied(config)) {
@@ -1385,7 +1400,6 @@ void Widget::save()
         }
     }
 
-    qDebug() << "应用配置：" << config;
     /* Store the current config, apply settings */
     auto *op = new KScreen::SetConfigOperation(config);
 
@@ -1688,6 +1702,7 @@ void Widget::checkOutputScreen(bool judge)
     }
     newPrimary->setEnabled(judge);
 
+
     ui->primaryCombo->blockSignals(true);
     ui->primaryCombo->setCurrentIndex(index);
     ui->primaryCombo->blockSignals(false);
@@ -1707,15 +1722,32 @@ void Widget::initConnection()
     connect(this, &Widget::changed, this, &Widget::changedSlot);
     connect(mControlPanel, &ControlPanel::scaleChanged, this, &Widget::scaleChangedSlot);
 
+    connect(this, &Widget::changed, this, [=](){
+        changedSlot();
+        delayApply();
+    });
+
     ui->controlPanelLayout->addWidget(mControlPanel);
 
-    connect(ui->applyButton, &QPushButton::clicked, this, [=]() {
-        QStringList keys = scaleGSettings->keys();
-        if (keys.contains("scalingFactor")) {
-            scaleres = scaleGSettings->get(SCALE_KEY).toDouble();
-        }
-        save();
+    connect(mUnifyButton, &SwitchButton::checkedChanged, this, [this] {
+       slotUnifyOutputs();
+       setScreenIsApply(true);
+       delayApply();
     });
+
+    connect(mCloseScreenButton, &SwitchButton::checkedChanged, this, [this](bool checked){
+        checkOutputScreen(checked);
+        delayApply();
+    });
+
+
+//    connect(ui->applyButton, &QPushButton::clicked, this, [=]() {
+//        QStringList keys = scaleGSettings->keys();
+//        if (keys.contains("scalingFactor")) {
+//            scaleres = scaleGSettings->get(SCALE_KEY).toDouble();
+//        }
+//        save();
+
 
     connect(ui->advancedBtn, &QPushButton::clicked, this, [=] {
         DisplayPerformanceDialog *dialog = new DisplayPerformanceDialog;
