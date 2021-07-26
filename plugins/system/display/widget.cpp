@@ -1716,7 +1716,11 @@ void Widget::initConnection()
     connect(mThemeButton, SIGNAL(checkedChanged(bool)), this, SLOT(slotThemeChanged(bool)));
     connect(singleButton, SIGNAL(buttonClicked(int)), this, SLOT(showCustomWiget(int)));
 
-    connect(ui->mainScreenButton, SIGNAL(clicked(bool)), this, SLOT(primaryButtonEnable(bool)));
+    connect(ui->mainScreenButton, &QPushButton::clicked, this, [=](bool status) {
+       primaryButtonEnable(status);
+       delayApply();
+    });
+
     mControlPanel = new ControlPanel(this);
     connect(mControlPanel, &ControlPanel::changed, this, &Widget::changed);
     connect(this, &Widget::changed, this, &Widget::changedSlot);
@@ -1759,11 +1763,6 @@ void Widget::initConnection()
         mIsUnifyChanged = true;
         slotUnifyOutputs();
         showBrightnessFrame();
-    });
-
-    connect(mCloseScreenButton, &SwitchButton::checkedChanged,
-            this, [=](bool checked) {
-        checkOutputScreen(checked);
     });
 
     QDBusConnection::sessionBus().connect(QString(),
