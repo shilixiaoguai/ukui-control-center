@@ -1733,12 +1733,6 @@ void Widget::initConnection()
 
     ui->controlPanelLayout->addWidget(mControlPanel);
 
-    connect(mUnifyButton, &SwitchButton::checkedChanged, this, [this] {
-       slotUnifyOutputs();
-       setScreenIsApply(true);
-       delayApply();
-    });
-
     connect(mCloseScreenButton, &SwitchButton::checkedChanged, this, [this](bool checked){
         checkOutputScreen(checked);
         delayApply();
@@ -1762,6 +1756,8 @@ void Widget::initConnection()
             [this] {
         mIsUnifyChanged = true;
         slotUnifyOutputs();
+        setScreenIsApply(true);
+        delayApply();
         showBrightnessFrame();
     });
 
