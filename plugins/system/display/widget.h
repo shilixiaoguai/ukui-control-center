@@ -84,6 +84,8 @@ public:
     void initUiComponent();
     void addBrightnessFrame(QString name, bool openFlag);
     void showBrightnessFrame(const int flag = 0);
+
+    void changescale();
 protected:
     bool eventFilter(QObject *object, QEvent *event) override;
 
@@ -232,6 +234,8 @@ private:
     bool mIsBattery       = false;
     bool mIsOutputAdd     = false;
     bool mIsScreenAdd     = false;
+
+    QSize mScaleSizeRes = QSize();
 
     bool threadRunExit = false;
     QFuture<void> threadRun;

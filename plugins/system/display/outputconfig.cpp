@@ -71,12 +71,6 @@ void OutputConfig::initUi()
                 slotResolutionChanged(mOutput->currentMode()->size(), false);
                 mRefreshRate->blockSignals(false);
             }
-
-            if (mScaleCombox) {
-                mScaleCombox->blockSignals(true);
-                slotScaleIndex(mOutput->currentMode()->size());
-                mScaleCombox->blockSignals(false);
-            }
         }
     });
 
@@ -184,8 +178,6 @@ void OutputConfig::initUi()
 
     double scale = getScreenScale();
 
-    slotScaleIndex(mResolution->currentResolution());
-
     mScaleCombox->setCurrentText(scaleToString(scale));
 
     if (mScaleCombox->findData(scale) == -1) {
@@ -214,6 +206,7 @@ void OutputConfig::initUi()
     scaleFrame->setMinimumSize(550, 50);
     scaleFrame->setMaximumSize(960, 50);
     vbox->addWidget(scaleFrame);
+    scaleFrame->hide();
 
     slotEnableWidget();
 }
@@ -372,59 +365,6 @@ void OutputConfig::slotEnableWidget()
         mRotation->setEnabled(false);
         mRefreshRate->setEnabled(false);
     }
-}
-
-void OutputConfig::slotScaleIndex(const QSize &size)
-{
-    QSize scalesize;
-
-    if (mScaleSize == QSize(0,0)) {
-        //当只有一个显示屏可用时，初始化当前分辨率下的缩放项
-        scalesize = mResolution->currentResolution();
-    } else if (mScaleSize == QSize()){
-        scalesize = size;
-    } else {
-        scalesize = size.width() > mScaleSize.width() ? mScaleSize : size;
-    }
-
-    if (!scalesize.isValid()) {
-        return;
-    }
-
-    mScaleCombox->blockSignals(true);
-    mScaleCombox->clear();
-    mScaleCombox->addItem("100%", 1.0);
-
-    if (scalesize.width() > 1024 ) {
-        mScaleCombox->addItem("125%", 1.25);
-    }
-    if (scalesize.width() == 1920 ) {
-        mScaleCombox->addItem("150%", 1.5);
-    }
-    if (scalesize.width() > 1920) {
-        mScaleCombox->addItem("150%", 1.5);
-        mScaleCombox->addItem("175%", 1.75);
-    }
-    if (scalesize.width() >= 2160) {
-        mScaleCombox->addItem("200%", 2.0);
-    }
-    if (scalesize.width() > 2560) {
-        mScaleCombox->addItem("225%", 2.25);
-    }
-    if (scalesize.width() > 3072) {
-        mScaleCombox->addItem("250%", 2.5);
-    }
-    if (scalesize.width() > 3840) {
-        mScaleCombox->addItem("275%", 2.75);
-    }
-
-    double scale = getScreenScale();
-    if (mScaleCombox->findData(scale) == -1) {
-        scale = 1.0;
-    }
-    mScaleCombox->setCurrentText(scaleToString(scale));
-    mScreenScale = scale;
-    mScaleCombox->blockSignals(false);
 }
 
 void OutputConfig::setShowScaleOption(bool showScaleOption)
