@@ -1627,7 +1627,7 @@ void Widget::mainScreenButtonSelect(int index)
     const KScreen::OutputPtr newPrimary = mConfig->output(ui->primaryCombo->itemData(index).toInt());
     int connectCount = mConfig->connectedOutputs().count();
 
-    if (newPrimary == mConfig->primaryOutput()) {
+    if (newPrimary == mConfig->primaryOutput() || mUnifyButton->isChecked() || (ui->primaryCombo->count() == 1)) {
         ui->mainScreenButton->setEnabled(false);
     } else {
         ui->mainScreenButton->setEnabled(true);
