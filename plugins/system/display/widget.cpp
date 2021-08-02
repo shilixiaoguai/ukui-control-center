@@ -562,7 +562,6 @@ void Widget::writeScale(double scale)
 
         QStringList keys = scaleGSettings->keys();
         if (keys.contains("scalingFactor")) {
-
             scaleGSettings->set(SCALE_KEY, scale);
         }
         cursorSettings.set(CURSOR_SIZE_KEY, cursize);
@@ -1628,6 +1627,7 @@ bool Widget::writeFile(const QString &filePath)
 
 void Widget::scaleChangedSlot(double scale)
 {
+
     if (scaleGSettings->get(SCALE_KEY).toDouble() != scale) {
         mIsScaleChanged = true;
     } else {
@@ -1764,7 +1764,6 @@ void Widget::initConnection()
     mControlPanel = new ControlPanel(this);
     connect(mControlPanel, &ControlPanel::changed, this, &Widget::changed);
     connect(this, &Widget::changed, this, &Widget::changedSlot);
-    connect(mControlPanel, &ControlPanel::scaleChanged, this, &Widget::scaleChangedSlot);
 
     connect(this, &Widget::changed, this, [=](){
         changedSlot();
@@ -2120,7 +2119,7 @@ void Widget::changescale()
             ui->scaleCombo->addItem("275%", 2.75);
         }
 
-        double scale;
+        double scale = 1.0;
         QStringList keys = scaleGSettings->keys();
         if (keys.contains("scalingFactor")) {
             scale = scaleGSettings->get(SCALE_KEY).toDouble();
