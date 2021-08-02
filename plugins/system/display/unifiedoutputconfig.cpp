@@ -170,7 +170,7 @@ void UnifiedOutputConfig::initUi()
     freshFrame->setMaximumSize(960, 50);
 
     slotResolutionChanged(mResolution->currentResolution());
-    connect(mRefreshRate, static_cast<void (QComboBox::*)(int)>(&QComboBox::activated),
+    connect(mRefreshRate, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
         this, &UnifiedOutputConfig::slotRefreshRateChanged);
 
     QObject::connect(new KScreen::GetConfigOperation(), &KScreen::GetConfigOperation::finished,

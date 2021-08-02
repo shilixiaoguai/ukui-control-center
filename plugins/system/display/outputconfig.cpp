@@ -146,7 +146,7 @@ void OutputConfig::initUi()
     mRotation->addItem(tr("90° arrow-right"), KScreen::Output::Right);
     mRotation->addItem(tr("90° arrow-left"), KScreen::Output::Left);
     mRotation->addItem(tr("arrow-down"), KScreen::Output::Inverted);
-    connect(mRotation, static_cast<void (QComboBox::*)(int)>(&QComboBox::activated),
+    connect(mRotation, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, &OutputConfig::slotRotationChanged);
     mRotation->setCurrentIndex(mRotation->findData(mOutput->rotation()));
 
@@ -176,7 +176,7 @@ void OutputConfig::initUi()
     vbox->addWidget(freshFrame);
 
     slotResolutionChanged(mResolution->currentResolution(), true);
-    connect(mRefreshRate, static_cast<void (QComboBox::*)(int)>(&QComboBox::activated),
+    connect(mRefreshRate, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, &OutputConfig::slotRefreshRateChanged);
 
     mScaleCombox = new QComboBox(this);
