@@ -221,7 +221,7 @@ private:
 
     QHash<QString, QVariant> mNightConfig;
 
-    double scaleres;
+    double scaleres = 1.0;
 
     bool mIsNightMode     = false;
     bool mRedshiftIsValid = false;
@@ -234,6 +234,7 @@ private:
     bool mIsBattery       = false;
     bool mIsOutputAdd     = false;
     bool mIsScreenAdd     = false;
+    bool mIsSCaleRes      = false;
 
     QSize mScaleSizeRes = QSize();
 

@@ -684,9 +684,12 @@ bool Widget::isRestoreConfig()
         res = false;
         break;
     case QMessageBox::RejectRole:
-        QStringList keys = scaleGSettings->keys();
-        if (keys.contains("scalingFactor")) {
-            scaleGSettings->set(SCALE_KEY,scaleres);
+        if (mIsSCaleRes) {
+            QStringList keys = scaleGSettings->keys();
+            if (keys.contains("scalingFactor")) {
+                scaleGSettings->set(SCALE_KEY,scaleres);
+            }
+            mIsSCaleRes = false;
         }
         res = true;
         break;
@@ -2127,6 +2130,7 @@ void Widget::changescale()
         }
         if (ui->scaleCombo->findData(scale) == -1) {
             //记录分辨率切换时，新分辨率不存在的缩放率，在用户点击恢复设置时写入
+            mIsSCaleRes = true;
             scaleres = scale;
             scale = 1.0;
         }
