@@ -271,7 +271,9 @@ void OutputConfig::slotResolutionChanged(const QSize &size, bool emitFlag)
     // Don't remove the first "Auto" item - prevents ugly flicker of the combobox
     // when changing resolution
     for (int i = mRefreshRate->count(); i >= 1; --i) {
+        mRefreshRate->blockSignals(true);
         mRefreshRate->removeItem(i - 1);
+        mRefreshRate->blockSignals(false);
     }
 
     for (int i = 0, total = modes.count(); i < total; ++i) {
@@ -285,7 +287,9 @@ void OutputConfig::slotResolutionChanged(const QSize &size, bool emitFlag)
             }
         }
         if (alreadyExisted == false) {   //不添加已经存在的项
+            mRefreshRate->blockSignals(true);
             mRefreshRate->addItem(tr("%1 Hz").arg(QLocale().toString(mode->refreshRate())), mode->id());
+            mRefreshRate->blockSignals(false);
         }
 
         // If selected refresh rate is other then what we consider the "Auto" value
@@ -293,7 +297,9 @@ void OutputConfig::slotResolutionChanged(const QSize &size, bool emitFlag)
         // we stick with "Auto"
         if (mode == currentMode && mRefreshRate->count() > 1) {
             // i + 1 since 0 is auto
+            mRefreshRate->blockSignals(true);
             mRefreshRate->setCurrentIndex(i);
+            mRefreshRate->blockSignals(false);
         }
     }
 
